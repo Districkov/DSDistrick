@@ -134,7 +134,7 @@ namespace DiscordBot.Modules
         {
             var modal = new ModalBuilder()
                 .WithTitle("👨‍👩‍👧‍👦 Заявка в семью")
-                .WithCustomId($"application_modal_{Context.User.Id}")
+                .WithCustomId($"application_modal")
                 .AddTextInput("Ваш ник в игре", "ingame_nick", placeholder: "Например: JohnDoe_123", required: true, maxLength: 50)
                 .AddTextInput("Ваше полное имя", "full_name", placeholder: "Ваше реальное имя", required: true, maxLength: 100)
                 .AddTextInput("Ваш онлайн статус", "online_status", placeholder: "Например: Активен в вечерние часы", required: true, maxLength: 100)
@@ -149,7 +149,7 @@ namespace DiscordBot.Modules
         {
             var modal = new ModalBuilder()
                 .WithTitle("🚗 Выбор машины")
-                .WithCustomId($"car_request_modal_{Context.User.Id}")
+                .WithCustomId($"car_request_modal")
                 .AddTextInput("Пункт назначения", "destination", placeholder: "Куда вам нужна машина?", required: true, maxLength: 100)
                 .AddTextInput("Причина", "reason", TextInputStyle.Paragraph, placeholder: "Зачем вам нужна машина?", required: true, maxLength: 500);
 
