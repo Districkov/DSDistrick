@@ -184,6 +184,20 @@ async Task InteractionCreatedAsync(SocketInteraction interaction)
     
     try
     {
+        // Логирование типа взаимодействия
+        Console.WriteLine($"\n📩 Получено взаимодействие:");
+        Console.WriteLine($"   Тип: {interaction.Type}");
+        Console.WriteLine($"   Пользователь: {interaction.User.Username}");
+        
+        if (interaction is IComponentInteraction component)
+        {
+            Console.WriteLine($"   CustomId: {component.Data.CustomId}");
+        }
+        else if (interaction is IModalSubmitInteraction modal)
+        {
+            Console.WriteLine($"   Modal CustomId: {modal.Data.CustomId}");
+        }
+        
         var result = await interactionService.ExecuteCommandAsync(ctx, services);
         
         if (!result.IsSuccess)
@@ -192,18 +206,27 @@ async Task InteractionCreatedAsync(SocketInteraction interaction)
             switch (result.Error)
             {
                 case InteractionCommandError.UnmetPrecondition:
-                    await loggerService.LogEventAsync("CommandError", $"Условие не выполнено: {result.ErrorReason}", interaction.User.Id, interaction.User.Username);
                     Console.WriteLine($"❌ Условие не выполнено: {result.ErrorReason}");
+                    await loggerService.LogEventAsync("CommandError", $"Условие не выполнено: {result.ErrorReason}", interaction.User.Id, interaction.User.Username);
                     break;
                 case InteractionCommandError.UnknownCommand:
+                    Console.WriteLine($"❌ Неизвестная команда/компонент: {result.ErrorReason}");
+                    if (interaction is IComponentInteraction comp)
+                    {
+                        Console.WriteLine($"   Ожидается: application_modal* или car_request_modal*");
+                        Console.WriteLine($"   Получено: {comp.Data.CustomId}");
+                    }
                     await loggerService.LogEventAsync("CommandError", $"Неизвестная команда", interaction.User.Id, interaction.User.Username);
-                    Console.WriteLine($"❌ Неизвестная команда");
                     break;
                 default:
-                    await loggerService.LogEventAsync("CommandError", $"Ошибка: {result.ErrorReason}", interaction.User.Id, interaction.User.Username);
                     Console.WriteLine($"❌ Ошибка: {result.ErrorReason}");
+                    await loggerService.LogEventAsync("CommandError", $"Ошибка: {result.ErrorReason}", interaction.User.Id, interaction.User.Username);
                     break;
             }
+        }
+        else
+        {
+            Console.WriteLine($"   ✅ Взаимодействие успешно обработано");
         }
     }
     catch (Exception ex)

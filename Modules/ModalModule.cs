@@ -28,7 +28,7 @@ namespace DiscordBot.Modules
             _client = client;
         }
 
-        [ModalInteraction("car_request_modal*", ignoreGroupNames: true)]
+        [ModalInteraction("car_request_modal", ignoreGroupNames: true)]
         public async Task HandleCarRequest(string destination, string reason)
         {
             Console.WriteLine($"🔔 ModalInteraction car_request_modal получен");
@@ -100,7 +100,7 @@ namespace DiscordBot.Modules
             }
         }
 
-        [ModalInteraction("application_modal*", ignoreGroupNames: true)]
+        [ModalInteraction("application_modal", ignoreGroupNames: true)]
         public async Task HandleApplication(string ingame_nick, string full_name, string online_status, string about, string reason)
         {
             Console.WriteLine($"🔔 ModalInteraction application_modal получен");
