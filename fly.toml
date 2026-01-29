@@ -1,5 +1,5 @@
 # fly.io app configuration
-app = "discord-bot-app"
+app = "discord-bot-solomin-2026"
 primary_region = "ams"
 
 [build]

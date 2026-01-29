@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: discord-bot
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        scope: run
+        sync: false
