@@ -9,13 +9,19 @@ namespace DiscordBot.Services
 
         public ConfigService(string configPath)
         {
+            // Сначала пытаемся загрузить из переменных окружения
+            var envToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN");
+            
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile(configPath, optional: false, reloadOnChange: true)
+                .AddJsonFile(configPath, optional: true, reloadOnChange: true)
                 .Build();
 
             _config = new BotConfig
             {
-                BotToken = configuration["BotToken"] ?? Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") ?? "",
+                // Приоритет: переменная окружения > config.json > пусто
+                BotToken = string.IsNullOrEmpty(envToken) 
+                    ? (configuration["BotToken"] ?? "")
+                    : envToken,
                 ApplicationId = ulong.Parse(configuration["ApplicationId"] ?? "0"),
                 FamilyApplicationsChannelId = ulong.Parse(configuration["FamilyApplicationsChannelId"] ?? "0"),
                 TransportRequestChannelId = ulong.Parse(configuration["TransportRequestChannelId"] ?? "0"),

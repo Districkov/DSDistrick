@@ -32,11 +32,27 @@ namespace DiscordBot.Modules
         public async Task HandleCarRequest(string destination, string reason)
         {
             Console.WriteLine($"🔔 ModalInteraction car_request_modal получен");
+            Console.WriteLine($"   Пользователь: {Context.User.Username} ({Context.User.Id})");
+            Console.WriteLine($"   Пункт назначения: {destination}");
+            Console.WriteLine($"   Причина: {reason}");
             
             try
             {
+                if (string.IsNullOrWhiteSpace(destination) || string.IsNullOrWhiteSpace(reason))
+                {
+                    await RespondAsync("❌ Ошибка: все поля должны быть заполнены!", ephemeral: true);
+                    return;
+                }
+
                 var cars = _autoService.GetAllCars();
                 
+                if (cars == null || cars.Count == 0)
+                {
+                    await RespondAsync("❌ В базе нет доступных машин", ephemeral: true);
+                    Console.WriteLine("⚠️  Ошибка: список машин пуст");
+                    return;
+                }
+
                 var selectMenu = new SelectMenuBuilder()
                     .WithPlaceholder("Выберите машину")
                     .WithCustomId($"car_select_{Context.User.Id}")
@@ -69,11 +85,18 @@ namespace DiscordBot.Modules
                     Context.User.Id,
                     Context.User.Username
                 );
+                
+                Console.WriteLine($"   ✅ Модаль успешно обработана");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка в HandleCarRequest: {ex.Message}\n{ex.StackTrace}");
-                await RespondAsync($"❌ Ошибка: {ex.Message}", ephemeral: true);
+                Console.WriteLine($"❌ Ошибка в HandleCarRequest: {ex.Message}");
+                Console.WriteLine($"   StackTrace: {ex.StackTrace}");
+                try
+                {
+                    await RespondAsync($"❌ Ошибка: {ex.Message}", ephemeral: true);
+                }
+                catch { }
             }
         }
 
@@ -81,9 +104,17 @@ namespace DiscordBot.Modules
         public async Task HandleApplication(string ingame_nick, string full_name, string online_status, string about, string reason)
         {
             Console.WriteLine($"🔔 ModalInteraction application_modal получен");
+            Console.WriteLine($"   Пользователь: {Context.User.Username} ({Context.User.Id})");
+            Console.WriteLine($"   Ник в игре: {ingame_nick}");
             
             try
             {
+                if (string.IsNullOrWhiteSpace(ingame_nick) || string.IsNullOrWhiteSpace(full_name))
+                {
+                    await RespondAsync("❌ Ошибка: ник и имя обязательны!", ephemeral: true);
+                    return;
+                }
+
                 var app = new FamilyApplication
                 {
                     UserId = Context.User.Id,
@@ -121,6 +152,11 @@ namespace DiscordBot.Modules
                         .Build();
 
                     await channel.SendMessageAsync(embed: embed, components: buttons);
+                    Console.WriteLine($"   ✅ Заявка отправлена в канал");
+                }
+                else
+                {
+                    Console.WriteLine($"   ⚠️  Канал заявок не найден! ID: {_config.FamilyApplicationsChannelId}");
                 }
 
                 await RespondAsync(
@@ -134,11 +170,18 @@ namespace DiscordBot.Modules
                     Context.User.Id,
                     Context.User.Username
                 );
+                
+                Console.WriteLine($"   ✅ Модаль успешно обработана");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка в HandleApplication: {ex.Message}\n{ex.StackTrace}");
-                await RespondAsync($"❌ Ошибка: {ex.Message}", ephemeral: true);
+                Console.WriteLine($"❌ Ошибка в HandleApplication: {ex.Message}");
+                Console.WriteLine($"   StackTrace: {ex.StackTrace}");
+                try
+                {
+                    await RespondAsync($"❌ Ошибка: {ex.Message}", ephemeral: true);
+                }
+                catch { }
             }
         }
     }

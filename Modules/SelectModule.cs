@@ -24,55 +24,84 @@ namespace DiscordBot.Modules
         [ComponentInteraction("car_select_final_*")]
         public async Task HandleCarSelection(string selectedValue)
         {
-            if (string.IsNullOrEmpty(selectedValue))
+            Console.WriteLine($"🔔 SelectInteraction car_select_final получен");
+            Console.WriteLine($"   Пользователь: {Context.User.Username} ({Context.User.Id})");
+            Console.WriteLine($"   Значение: {selectedValue}");
+            
+            try
             {
-                await RespondAsync("❌ Ошибка при выборе машины.", ephemeral: true);
-                return;
-            }
+                if (string.IsNullOrEmpty(selectedValue))
+                {
+                    await RespondAsync("❌ Ошибка при выборе машины.", ephemeral: true);
+                    return;
+                }
 
-            // Парсим значение: машина|назначение|причина
-            var parts = selectedValue.Split('|');
-            var selectedCar = parts[0];
-            var destination = parts.Length > 1 ? parts[1] : "неизвестно";
-            var reason = parts.Length > 2 ? parts[2] : "не указана";
+                // Парсим значение: машина|назначение|причина
+                var parts = selectedValue.Split('|');
+                if (parts.Length < 1)
+                {
+                    await RespondAsync("❌ Ошибка при обработке выбора.", ephemeral: true);
+                    return;
+                }
+                
+                var selectedCar = parts[0];
+                var destination = parts.Length > 1 ? parts[1] : "неизвестно";
+                var reason = parts.Length > 2 ? parts[2] : "не указана";
 
-            _autoService.SelectCar(Context.User.Id, Context.User.Username, selectedCar);
-            await _loggerService.LogEventAsync("AutoSelection", $"{Context.User.Username} выбрал машину {selectedCar} для поездки в {destination}", Context.User.Id, Context.User.Username);
+                _autoService.SelectCar(Context.User.Id, Context.User.Username, selectedCar);
+                await _loggerService.LogEventAsync("AutoSelection", $"{Context.User.Username} выбрал машину {selectedCar} для поездки в {destination}", Context.User.Id, Context.User.Username);
 
-            // Отправляем уведомление в канал выбора авто
-            var autoChannel = _client.GetChannel(_config.TransportRequestChannelId) as IMessageChannel;
-            if (autoChannel != null)
-            {
-                var embed = new EmbedBuilder()
-                    .WithTitle("🚗 Новый запрос машины")
-                    .WithDescription($"**{Context.User.Username}** выбрал(а) машину для поездки")
-                    .AddField("🚗 Машина", selectedCar, inline: true)
-                    .AddField("📍 Пункт назначения", destination, inline: true)
-                    .AddField("📝 Причина", reason)
-                    .WithColor(Color.Purple)
-                    .WithThumbnailUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl())
+                // Отправляем уведомление в канал выбора авто
+                var autoChannel = _client.GetChannel(_config.TransportRequestChannelId) as IMessageChannel;
+                if (autoChannel != null)
+                {
+                    var embed = new EmbedBuilder()
+                        .WithTitle("🚗 Новый запрос машины")
+                        .WithDescription($"**{Context.User.Username}** выбрал(а) машину для поездки")
+                        .AddField("🚗 Машина", selectedCar, inline: true)
+                        .AddField("📍 Пункт назначения", destination, inline: true)
+                        .AddField("📝 Причина", reason)
+                        .WithColor(Color.Purple)
+                        .WithThumbnailUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl())
+                        .WithTimestamp(DateTime.UtcNow)
+                        .Build();
+
+                    await autoChannel.SendMessageAsync(embed: embed);
+                    Console.WriteLine($"   ✅ Уведомление отправлено в канал");
+                }
+                else
+                {
+                    Console.WriteLine($"   ⚠️  Канал выбора авто не найден! ID: {_config.TransportRequestChannelId}");
+                }
+
+                // Показываем обновленный статус машин
+                var cars = _autoService.GetAllCars();
+                var available = _autoService.GetAvailableCars();
+                var occupied = _autoService.GetOccupiedCars();
+
+                var statusEmbed = new EmbedBuilder()
+                    .WithTitle("✅ Машина зарезервирована!")
+                    .WithDescription($"Вы выбрали машину **{selectedCar}** для поездки в **{destination}**")
+                    .AddField("📊 Текущий статус машин", 
+                        $"✅ Свободных: {available.Count}\n❌ Занятых: {occupied.Count}", 
+                        inline: false)
+                    .WithColor(Color.Green)
                     .WithTimestamp(DateTime.UtcNow)
                     .Build();
 
-                await autoChannel.SendMessageAsync(embed: embed);
+                await RespondAsync(embed: statusEmbed, ephemeral: true);
+                Console.WriteLine($"   ✅ Выбор успешно обработан");
             }
-
-            // Показываем обновленный статус машин
-            var cars = _autoService.GetAllCars();
-            var available = _autoService.GetAvailableCars();
-            var occupied = _autoService.GetOccupiedCars();
-
-            var statusEmbed = new EmbedBuilder()
-                .WithTitle("✅ Машина зарезервирована!")
-                .WithDescription($"Вы выбрали машину **{selectedCar}** для поездки в **{destination}**")
-                .AddField("📊 Текущий статус машин", 
-                    $"✅ Свободных: {available.Count}\n❌ Занятых: {occupied.Count}", 
-                    inline: false)
-                .WithColor(Color.Green)
-                .WithTimestamp(DateTime.UtcNow)
-                .Build();
-
-            await RespondAsync(embed: statusEmbed, ephemeral: true);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка в HandleCarSelection: {ex.Message}");
+                Console.WriteLine($"   StackTrace: {ex.StackTrace}");
+                try
+                {
+                    await RespondAsync($"❌ Ошибка: {ex.Message}", ephemeral: true);
+                }
+                catch { }
+            }
         }
     }
 }

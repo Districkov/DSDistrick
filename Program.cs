@@ -239,11 +239,21 @@ try
 {
     Console.WriteLine("\n🔐 Попытка подключения к Discord...");
     
-    if (string.IsNullOrEmpty(config.BotToken) || config.BotToken == "YOUR_BOT_TOKEN_HERE")
+    // Проверяем токен из переменных окружения
+    var envToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN");
+    if (!string.IsNullOrEmpty(envToken))
     {
-        Console.WriteLine("❌ ОШИБКА: BotToken не установлен или имеет значение по умолчанию!");
-        Console.WriteLine("   Пожалуйста, установите правильный токен в config.json");
-        Console.WriteLine("\n   Текущее значение токена: " + (string.IsNullOrEmpty(config.BotToken) ? "[ПУСТО]" : config.BotToken.Substring(0, Math.Min(10, config.BotToken.Length)) + "..."));
+        Console.WriteLine($"   ✅ Токен загружен из переменной окружения DISCORD_BOT_TOKEN");
+    }
+    
+    if (string.IsNullOrEmpty(config.BotToken) || config.BotToken.Length < 20)
+    {
+        Console.WriteLine("\n❌ КРИТИЧЕСКАЯ ОШИБКА: BotToken не установлен или невалидный!");
+        Console.WriteLine("\n📋 РЕШЕНИЕ:");
+        Console.WriteLine("   1. ЛОКАЛЬНО: Установите значение BotToken в config.json");
+        Console.WriteLine("   2. НА RENDER: Добавьте переменную окружения DISCORD_BOT_TOKEN");
+        Console.WriteLine("   3. НА FLY.IO: Запустите: fly secrets set DISCORD_BOT_TOKEN=<ваш_токен>");
+        Console.WriteLine("\n   Где взять токен: https://discord.com/developers/applications");
         return;
     }
     
