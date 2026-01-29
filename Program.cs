@@ -227,17 +227,7 @@ Console.WriteLine("📦 Загруженные модули:");
 foreach (var module in interactionService.Modules)
 {
     Console.WriteLine($"   ✓ {module.Name}");
-    Console.WriteLine($"      Команд: {module.SlashCommands.Count}");
-    Console.WriteLine($"      Компонентов: {module.ComponentCommands.Count}");
-    Console.WriteLine($"      Модалей: {module.ModalCommands.Count}");
-    
-    if (module.ModalCommands.Count > 0)
-    {
-        foreach (var modal in module.ModalCommands)
-        {
-            Console.WriteLine($"         - Modal: {modal.Name}");
-        }
-    }
+    Console.WriteLine($"      Команд: {module.SlashCommands.Count}, Компонентов: {module.ComponentCommands.Count}, Модалей: {module.ModalCommands.Count}");
 }
 
 try
