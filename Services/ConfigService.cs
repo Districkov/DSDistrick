@@ -15,7 +15,7 @@ namespace DiscordBot.Services
 
             _config = new BotConfig
             {
-                BotToken = configuration["BotToken"],
+                BotToken = configuration["BotToken"] ?? Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") ?? "",
                 ApplicationId = ulong.Parse(configuration["ApplicationId"] ?? "0"),
                 FamilyApplicationsChannelId = ulong.Parse(configuration["FamilyApplicationsChannelId"] ?? "0"),
                 TransportRequestChannelId = ulong.Parse(configuration["TransportRequestChannelId"] ?? "0"),

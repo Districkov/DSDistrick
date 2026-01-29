@@ -1,0 +1,12 @@
+# fly.io app configuration
+app = "discord-bot-app"
+primary_region = "ams"
+
+[build]
+  image = "discord-bot:latest"
+
+[env]
+  # Токен будет установлен через: fly secrets set DISCORD_BOT_TOKEN=<токен>
+  
+[processes]
+  app = "dotnet DiscordBot.dll"

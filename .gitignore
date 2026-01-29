@@ -1,0 +1,16 @@
+## IDE & Build
+.vs/
+.vscode/
+bin/
+obj/
+*.user
+*.suo
+
+## Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+## OS
+.DS_Store
+Thumbs.db
