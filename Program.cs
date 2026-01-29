@@ -6,7 +6,12 @@ using DiscordBot.Services;
 using DiscordBot.Models;
 
 // Получаем путь к корню проекта
-var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "config.json");
+var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+// Если файл не найден, пытаемся разные варианты
+if (!File.Exists(configPath))
+{
+    configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "config.json");
+}
 var config = new ConfigService(configPath).GetConfig();
 
 var client = new DiscordSocketClient(new DiscordSocketConfig
