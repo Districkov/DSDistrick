@@ -5,6 +5,34 @@ using Microsoft.Extensions.DependencyInjection;
 using DiscordBot.Services;
 using DiscordBot.Models;
 
+// 🌐 Запускаем простой HTTP сервер для health check на Render
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var httpListener = new HttpListener();
+httpListener.Prefixes.Add($"http://0.0.0.0:{port}/");
+httpListener.Start();
+Console.WriteLine($"🌐 Health check сервер запущен на порту {port}");
+
+// Фоновый процесс для обработки HTTP запросов
+_ = Task.Run(async () =>
+{
+    while (true)
+    {
+        try
+        {
+            var context = await httpListener.GetContextAsync();
+            var response = context.Response;
+            response.StatusCode = 200;
+            response.ContentType = "text/plain";
+            
+            var responseString = "Discord Bot is running!";
+            var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+            response.Close();
+        }
+        catch { }
+    }
+});
+
 // Получаем путь к корню проекта
 var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 // Если файл не найден, пытаемся разные варианты

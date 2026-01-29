@@ -147,13 +147,60 @@ namespace DiscordBot.Modules
         [ComponentInteraction("auto_select_btn")]
         public async Task AutoSelectButton()
         {
-            var modal = new ModalBuilder()
-                .WithTitle("🚗 Выбор машины")
-                .WithCustomId($"car_request_modal")
-                .AddTextInput("Пункт назначения", "destination", placeholder: "Куда вам нужна машина?", required: true, maxLength: 100)
-                .AddTextInput("Причина", "reason", TextInputStyle.Paragraph, placeholder: "Зачем вам нужна машина?", required: true, maxLength: 500);
-
-            await Context.Interaction.RespondWithModalAsync(modal.Build());
+            Console.WriteLine($"🔔 Кнопка auto_select_btn нажата");
+            Console.WriteLine($"   Пользователь: {Context.User.Username}");
+            
+            // Получаем список машин
+            var cars = _autoService.GetAllCars();
+            
+            if (cars == null || cars.Count == 0)
+            {
+                await RespondAsync("❌ В базе нет машин!", ephemeral: true);
+                return;
+            }
+            
+            // Создаем эмбед со списком машин
+            var embed = new EmbedBuilder()
+                .WithTitle("🚗 Выберите машину для поездки")
+                .WithColor(Color.Purple)
+                .WithDescription("Выберите нужную машину из списка ниже:")
+                .WithFooter("После выбора укажите пункт назначения и причину");
+            
+            // Добавляем список машин в эмбед
+            var machineList = "";
+            foreach (var car in cars)
+            {
+                var status = car.IsOccupied ? "❌" : "✅";
+                var owner = car.IsOccupied ? $" ({car.OccupiedByName})" : "";
+                machineList += $"{status} **{car.Name}**{owner}\n";
+            }
+            embed.AddField("Доступные машины", machineList);
+            
+            // Создаем select меню для выбора машины
+            var selectMenu = new SelectMenuBuilder()
+                .WithPlaceholder("Выберите машину")
+                .WithCustomId($"car_select_for_request_{Context.User.Id}")
+                .WithMinValues(1)
+                .WithMaxValues(1);
+            
+            foreach (var car in cars)
+            {
+                var status = car.IsOccupied ? "❌ Занята" : "✅ Свободна";
+                var owner = car.IsOccupied ? $" ({car.OccupiedByName})" : "";
+                selectMenu.AddOption(
+                    label: $"{car.Name}",
+                    value: car.Name,
+                    description: $"{status}{owner}"
+                );
+            }
+            
+            var component = new ComponentBuilder()
+                .WithSelectMenu(selectMenu)
+                .Build();
+            
+            await RespondAsync(embed: embed.Build(), components: component, ephemeral: true);
+            
+            Console.WriteLine($"   ✅ Список машин отправлен");
         }
     }
 }

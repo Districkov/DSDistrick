@@ -21,6 +21,37 @@ namespace DiscordBot.Modules
             _client = client;
         }
 
+        [ComponentInteraction("car_select_for_request_*")]
+        public async Task HandleCarSelectForRequest(string selectedCar)
+        {
+            Console.WriteLine($"🔔 SelectInteraction car_select_for_request получен");
+            Console.WriteLine($"   Пользователь: {Context.User.Username} ({Context.User.Id})");
+            Console.WriteLine($"   Выбранная машина: {selectedCar}");
+            
+            try
+            {
+                // Открываем модаль для ввода пункта назначения и причины
+                var modal = new ModalBuilder()
+                    .WithTitle("🚗 Запрос машины")
+                    .WithCustomId($"car_request_with_car_{selectedCar}_{Context.User.Id}")
+                    .AddTextInput("Пункт назначения", "destination", placeholder: "Куда вам нужна машина?", required: true, maxLength: 100)
+                    .AddTextInput("Причина", "reason", TextInputStyle.Paragraph, placeholder: "Зачем вам нужна машина?", required: true, maxLength: 500);
+
+                await Context.Interaction.RespondWithModalAsync(modal.Build());
+                
+                Console.WriteLine($"   ✅ Модаль открыта для заполнения");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Ошибка в HandleCarSelectForRequest: {ex.Message}");
+                try
+                {
+                    await RespondAsync($"❌ Ошибка: {ex.Message}", ephemeral: true);
+                }
+                catch { }
+            }
+        }
+
         [ComponentInteraction("car_select_final_*")]
         public async Task HandleCarSelection(string selectedValue)
         {

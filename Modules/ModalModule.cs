@@ -29,6 +29,7 @@ namespace DiscordBot.Modules
         }
 
         [ModalInteraction("car_request_modal", ignoreGroupNames: true)]
+        [ModalInteraction("car_request_with_car_*", ignoreGroupNames: true)]
         public async Task HandleCarRequest(string destination, string reason)
         {
             Console.WriteLine($"🔔 ModalInteraction car_request_modal получен");
@@ -55,7 +56,7 @@ namespace DiscordBot.Modules
 
                 var selectMenu = new SelectMenuBuilder()
                     .WithPlaceholder("Выберите машину")
-                    .WithCustomId($"car_select_{Context.User.Id}")
+                    .WithCustomId($"car_select_final_{Context.User.Id}")
                     .WithMinValues(1)
                     .WithMaxValues(1);
 
